@@ -20,7 +20,13 @@
         <activity android:name=".activity.WeatherActivity">
 
         </activity>
-
+        <receiver android:name=".receiver.AutoUpdateReceiver">
+            <!--用于测试自定义广播-->
+            <intent-filter>
+                <action android:name="com.hwb.broadcastreceiver.MY_BROADCAST"/>
+            </intent-filter>
+        </receiver>
+        <service android:name=".service.AutoUpdateService"></service>
     </application>
 
 </manifest>

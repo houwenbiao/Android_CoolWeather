@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#484E61"
+        android:background="#48bbbb"
         >
         <TextView
             android:id="@+id/tv_title"
@@ -21,6 +21,7 @@
 
     <ListView
         android:id="@+id/lv_list"
+        android:background="#4affaa"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

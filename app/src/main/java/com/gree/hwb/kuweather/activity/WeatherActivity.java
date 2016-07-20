@@ -1,9 +1,14 @@
 package com.gree.hwb.kuweather.activity;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +20,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gree.hwb.kuweather.R;
+import com.gree.hwb.kuweather.receiver.AutoUpdateReceiver;
+import com.gree.hwb.kuweather.service.AutoUpdateService;
 import com.gree.hwb.kuweather.util.HttpUtil;
 import com.gree.hwb.kuweather.util.HttpcallbackListener;
 import com.gree.hwb.kuweather.util.Utility;
@@ -32,7 +39,7 @@ public class WeatherActivity extends AppCompatActivity
 	//用于显示天气描述信息
 	private TextView tvWeatherDesp;
 	//用于显示气温1,2
-	private TextView tvTemp1,tvTemp2;
+	private static TextView tvTemp1,tvTemp2;
 	//用于显示当前日期
 	private TextView tvCurrentDate;
 	Button btn_switchCity,btn_refreshWeather;
@@ -94,7 +101,7 @@ public class WeatherActivity extends AppCompatActivity
 		});
 	}
 	//查询县级代码对应的天气代号
-	private void queryWeatherCode(String countyCode)
+	public void queryWeatherCode(String countyCode)
 	{
 		String address = "http://www.weather.com.cn/data/list3/city"+countyCode+".xml";
 		Log.i("zxaddress",address+address);
@@ -104,6 +111,7 @@ public class WeatherActivity extends AppCompatActivity
 	//根据天气代码查询对应的天气信息
 	private void queryWeatherInfo(String weatherCode)
 	{
+//		String address = "http://m.weather.com.cn/data/zs/"+weatherCode+".html";
 		String address = "http://www.weather.com.cn/data/cityinfo/"+weatherCode+".html";
 		Log.i("zxqueryWeatherInfo","queryWeatherInfoaddress:"+address);
 		queryFromServer(address,"weatherCode");
@@ -115,15 +123,15 @@ public class WeatherActivity extends AppCompatActivity
 		HttpUtil.sendHttpRequest(address, new HttpcallbackListener()
 		{
 			@Override
-			public void onFinish(final String responce)
+			public void onFinish(final String response)
 			{
 				Log.i("zxonFinish","type:"+type);
 				if ("countyCode".equals(type))
 				{
-					if (!TextUtils.isEmpty(responce))
+					if (!TextUtils.isEmpty(response))
 					{
 						//从服务器中返回的数据中解析出天气代码
-						String array[] = responce.split("\\|");//190404|1904040110后面就是天气代码
+						String array[] = response.split("\\|");//190404|1904040110后面就是天气代码
 						if ((array!= null)&&(array.length == 2))
 						{
 							String weatherCode = array[1];//获取天气代码
@@ -139,7 +147,7 @@ public class WeatherActivity extends AppCompatActivity
 				{
 					//处理服务器返回的天气信息
 					Log.i("zxweatherCode","下面由weatherCode查询天气信息");
-					Utility.handleWeatherResponse(WeatherActivity.this,responce);
+					Utility.handleWeatherResponse(WeatherActivity.this,response);
 					runOnUiThread(new Runnable()
 					{
 						@Override
@@ -167,17 +175,19 @@ public class WeatherActivity extends AppCompatActivity
 		});
 	}
 	//从SharedPreferences中读取存储的天气信息
-	private void showWeather()
+	public void showWeather()
 	{
 		SharedPreferences sharedPreferences = WeatherActivity.this.getSharedPreferences("weatherInfo", Context.MODE_PRIVATE);
 		tvCityName.setText(sharedPreferences.getString("cityName",""));
 		tvCurrentDate.setText(sharedPreferences.getString("currentDate",""));
 		tvWeatherDesp.setText(sharedPreferences.getString("weatherDesp",""));
-		tvPublishTime.setText(sharedPreferences.getString("publishTime",""));
+		tvPublishTime.setText("今天"+sharedPreferences.getString("publishTime","")+"发布");
 		tvTemp2.setText(sharedPreferences.getString("temp2",""));
 		tvTemp1.setText(sharedPreferences.getString("temp1",""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);
 		tvCityName.setVisibility(View.VISIBLE);
+		Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+		startService(intent);//开启服务
 		Log.i("zxSharedPreferences",sharedPreferences.getString("cityName",""));
 	}
 }

@@ -29,7 +29,7 @@ public class HttpUtil
 					conn = (HttpURLConnection) url.openConnection();
 					conn.setRequestMethod("GET");//请求方式
 					conn.setConnectTimeout(8000);
-					conn.setReadTimeout(8000);//超时等待时间
+					conn.setReadTimeout(10000);//超时等待时间
 					Log.i("zxsendHttpRequest","setReadTimeout");
 					//流中存放的就是服务器返回的数据
 					InputStream is = conn.getInputStream();
